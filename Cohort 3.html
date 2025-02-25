@@ -1,0 +1,2057 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.353">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Sydney Cerveny">
+<meta name="author" content="Roland Bock">
+<meta name="dcterms.date" content="2024-11-18">
+
+<title>Sucrose Learning</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="Cohort 3_files/libs/clipboard/clipboard.min.js"></script>
+<script src="Cohort 3_files/libs/quarto-html/quarto.js"></script>
+<script src="Cohort 3_files/libs/quarto-html/popper.min.js"></script>
+<script src="Cohort 3_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="Cohort 3_files/libs/quarto-html/anchor.min.js"></script>
+<link href="Cohort 3_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="Cohort 3_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="Cohort 3_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="Cohort 3_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="Cohort 3_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+</div>
+<main class="content page-columns page-full" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Sucrose Learning</h1>
+<p class="subtitle lead">Cohort 3</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Authors</div>
+    <div class="quarto-title-meta-contents">
+             <p>Sydney Cerveny </p>
+             <p>Roland Bock </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">November 18, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+</header>
+
+<section id="cohort-description" class="level1 page-columns page-full" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> Cohort Description</h1>
+<section id="special-considerations" class="level2" data-number="1.1">
+<h2 data-number="1.1" class="anchored" data-anchor-id="special-considerations"><span class="header-section-number">1.1</span> Special considerations</h2>
+<p>This cohort started on October 29th, 2024 and the USA ended the daylight savings time on November 3rd, 2024. We need to ensure that our data aligns correctly after the time change.</p>
+</section>
+<section id="animals" class="level2 page-columns page-full" data-number="1.2">
+<h2 data-number="1.2" class="anchored" data-anchor-id="animals"><span class="header-section-number">1.2</span> Animals</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>mice_C3 <span class="ot">&lt;-</span> <span class="fu">read_tsv</span>(<span class="fu">here</span>(<span class="st">"data/C3/SL"</span>, <span class="st">"Animal.txt"</span>), <span class="at">col_names =</span> T,</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>                    <span class="at">col_types =</span> mouse.col.spec)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell page-columns page-full">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>mice_C3 <span class="sc">%&gt;%</span> </span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(Group, Sex) <span class="sc">%&gt;%</span> </span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> Sex, <span class="at">values_from =</span> n) <span class="sc">%&gt;%</span> </span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rowwise</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">total =</span> <span class="fu">sum</span>(Female, Male, <span class="at">na.rm =</span> T)) <span class="sc">%&gt;%</span> </span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gt</span>(<span class="at">rowname_col =</span> <span class="st">"Group"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_header</span>(<span class="at">title =</span> <span class="st">"Mouse Count"</span>, </span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>             <span class="at">subtitle =</span> <span class="st">"Cohort 3"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sub_missing</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">grand_summary_rows</span>(<span class="at">columns =</span> (Female<span class="sc">:</span>total),</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>                     <span class="at">fns =</span> <span class="fu">list</span>(</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>                       total <span class="sc">~</span> <span class="fu">sum</span>(., <span class="at">na.rm =</span> T)</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>                     )) <span class="sc">%&gt;%</span> </span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gt_highlight_cols</span>(<span class="at">columns =</span> total,</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>                    <span class="at">fill =</span> <span class="st">"lightgray"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_style</span>(</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">locations =</span> <span class="fu">cells_grand_summary</span>(),</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">style =</span> <span class="fu">cell_fill</span>(<span class="at">color =</span> <span class="st">"gray"</span>)</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display page-columns page-full">
+<div id="tbl-dataset-size" class="anchored page-columns page-full">
+
+<div id="jysqoygmhw" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;" class="page-columns page-full">
+<style>#jysqoygmhw table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#jysqoygmhw thead, #jysqoygmhw tbody, #jysqoygmhw tfoot, #jysqoygmhw tr, #jysqoygmhw td, #jysqoygmhw th {
+  border-style: none;
+}
+
+#jysqoygmhw p {
+  margin: 0;
+  padding: 0;
+}
+
+#jysqoygmhw .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#jysqoygmhw .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#jysqoygmhw .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#jysqoygmhw .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#jysqoygmhw .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#jysqoygmhw .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#jysqoygmhw .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#jysqoygmhw .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#jysqoygmhw .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#jysqoygmhw .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#jysqoygmhw .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#jysqoygmhw .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#jysqoygmhw .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#jysqoygmhw .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#jysqoygmhw .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#jysqoygmhw .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#jysqoygmhw .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#jysqoygmhw .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#jysqoygmhw .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#jysqoygmhw .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#jysqoygmhw .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#jysqoygmhw .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#jysqoygmhw .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#jysqoygmhw .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#jysqoygmhw .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#jysqoygmhw .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#jysqoygmhw .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#jysqoygmhw .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#jysqoygmhw .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#jysqoygmhw .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#jysqoygmhw .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#jysqoygmhw .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#jysqoygmhw .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#jysqoygmhw .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#jysqoygmhw .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#jysqoygmhw .gt_left {
+  text-align: left;
+}
+
+#jysqoygmhw .gt_center {
+  text-align: center;
+}
+
+#jysqoygmhw .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#jysqoygmhw .gt_font_normal {
+  font-weight: normal;
+}
+
+#jysqoygmhw .gt_font_bold {
+  font-weight: bold;
+}
+
+#jysqoygmhw .gt_font_italic {
+  font-style: italic;
+}
+
+#jysqoygmhw .gt_super {
+  font-size: 65%;
+}
+
+#jysqoygmhw .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#jysqoygmhw .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#jysqoygmhw .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#jysqoygmhw .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#jysqoygmhw .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#jysqoygmhw .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#jysqoygmhw .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#jysqoygmhw .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#jysqoygmhw div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+<table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+  <thead>
+    <tr class="gt_heading">
+      <td colspan="4" class="gt_heading gt_title gt_font_normal" style="">Mouse Count</td>
+    </tr>
+    <tr class="gt_heading">
+      <td colspan="4" class="gt_heading gt_subtitle gt_font_normal gt_bottom_border" style="">Cohort 3</td>
+    </tr>
+    <tr class="gt_col_headings">
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="a::stub"></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="Female">Female</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="Male">Male</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="total">total</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><th id="stub_1_1" scope="row" class="gt_row gt_left gt_stub">auto HET</th>
+<td headers="stub_1_1 Female" class="gt_row gt_right">2</td>
+<td headers="stub_1_1 Male" class="gt_row gt_right">6</td>
+<td headers="stub_1_1 total" class="gt_row gt_right" style="background-color: #D3D3D3; color: #000000; font-weight: normal; border-top-width: 1px; border-top-style: solid; border-top-color: lightgray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: lightgray;">8</td></tr>
+    <tr><th id="stub_1_2" scope="row" class="gt_row gt_left gt_stub">control</th>
+<td headers="stub_1_2 Female" class="gt_row gt_right">2</td>
+<td headers="stub_1_2 Male" class="gt_row gt_right">2</td>
+<td headers="stub_1_2 total" class="gt_row gt_right" style="background-color: #D3D3D3; color: #000000; font-weight: normal; border-top-width: 1px; border-top-style: solid; border-top-color: lightgray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: lightgray;">4</td></tr>
+    <tr><th id="stub_1_3" scope="row" class="gt_row gt_left gt_stub">double HET</th>
+<td headers="stub_1_3 Female" class="gt_row gt_right">—</td>
+<td headers="stub_1_3 Male" class="gt_row gt_right">1</td>
+<td headers="stub_1_3 total" class="gt_row gt_right" style="background-color: #D3D3D3; color: #000000; font-weight: normal; border-top-width: 1px; border-top-style: solid; border-top-color: lightgray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: lightgray;">1</td></tr>
+    <tr><th id="stub_1_4" scope="row" class="gt_row gt_left gt_stub">iMSN HET</th>
+<td headers="stub_1_4 Female" class="gt_row gt_right">2</td>
+<td headers="stub_1_4 Male" class="gt_row gt_right">2</td>
+<td headers="stub_1_4 total" class="gt_row gt_right" style="background-color: #D3D3D3; color: #000000; font-weight: normal; border-top-width: 1px; border-top-style: solid; border-top-color: lightgray; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: lightgray;">4</td></tr>
+    <tr><th id="grand_summary_stub_1" scope="row" class="gt_row gt_left gt_stub gt_grand_summary_row gt_first_grand_summary_row gt_last_summary_row">total</th>
+<td headers="grand_summary_stub_1 Female" class="gt_row gt_right gt_grand_summary_row gt_first_grand_summary_row gt_last_summary_row" style="background-color: #BEBEBE;">6</td>
+<td headers="grand_summary_stub_1 Male" class="gt_row gt_right gt_grand_summary_row gt_first_grand_summary_row gt_last_summary_row" style="background-color: #BEBEBE;">11</td>
+<td headers="grand_summary_stub_1 total" class="gt_row gt_right gt_grand_summary_row gt_first_grand_summary_row gt_last_summary_row" style="background-color: #BEBEBE;">17</td></tr>
+  </tbody>
+  
+  
+</table>
+<div class="quarto-table-caption margin-caption">Table&nbsp;1:  <p>Distribution of sexes and genotypes within cohort 3.</p> </div></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="data" class="level1 page-columns page-full" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Data</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>visits_c3 <span class="ot">&lt;-</span> <span class="fu">read_tsv</span>(<span class="fu">here</span>(<span class="st">"data/C3/SL"</span>, <span class="st">"Visit.txt"</span>), <span class="at">col_names =</span> T,</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>                      <span class="at">col_types =</span> visits.col.spec)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>visits_c3 <span class="sc">%&gt;%</span> </span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Session) <span class="sc">%&gt;%</span> </span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">start =</span> <span class="fu">min</span>(StartDate),</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">end =</span> <span class="fu">max</span>(StartDate),</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">visits =</span> <span class="fu">n</span>(),</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">pokes =</span> <span class="fu">sum</span>(NosepokeNumber),</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>            <span class="at">licks =</span> <span class="fu">sum</span>(LickNumber)) <span class="sc">%&gt;%</span> </span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">length =</span> end <span class="sc">-</span> start) <span class="sc">%&gt;%</span> </span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gt</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_header</span>(<span class="at">title =</span> <span class="st">"Counts for the dataset"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cols_move</span>(length, end) <span class="sc">%&gt;%</span> </span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_caption</span>(<span class="st">"Initial overview of the dataset for cohort 3."</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fmt_number</span>(<span class="at">columns =</span> (visits<span class="sc">:</span>licks),</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>             <span class="at">decimals =</span> <span class="dv">0</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+
+<div id="beikvbmmax" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#beikvbmmax table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#beikvbmmax thead, #beikvbmmax tbody, #beikvbmmax tfoot, #beikvbmmax tr, #beikvbmmax td, #beikvbmmax th {
+  border-style: none;
+}
+
+#beikvbmmax p {
+  margin: 0;
+  padding: 0;
+}
+
+#beikvbmmax .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#beikvbmmax .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#beikvbmmax .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#beikvbmmax .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#beikvbmmax .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#beikvbmmax .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#beikvbmmax .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#beikvbmmax .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#beikvbmmax .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#beikvbmmax .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#beikvbmmax .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#beikvbmmax .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#beikvbmmax .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#beikvbmmax .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#beikvbmmax .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#beikvbmmax .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#beikvbmmax .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#beikvbmmax .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#beikvbmmax .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#beikvbmmax .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#beikvbmmax .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#beikvbmmax .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#beikvbmmax .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#beikvbmmax .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#beikvbmmax .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#beikvbmmax .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#beikvbmmax .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#beikvbmmax .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#beikvbmmax .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#beikvbmmax .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#beikvbmmax .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#beikvbmmax .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#beikvbmmax .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#beikvbmmax .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#beikvbmmax .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#beikvbmmax .gt_left {
+  text-align: left;
+}
+
+#beikvbmmax .gt_center {
+  text-align: center;
+}
+
+#beikvbmmax .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#beikvbmmax .gt_font_normal {
+  font-weight: normal;
+}
+
+#beikvbmmax .gt_font_bold {
+  font-weight: bold;
+}
+
+#beikvbmmax .gt_font_italic {
+  font-style: italic;
+}
+
+#beikvbmmax .gt_super {
+  font-size: 65%;
+}
+
+#beikvbmmax .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#beikvbmmax .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#beikvbmmax .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#beikvbmmax .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#beikvbmmax .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#beikvbmmax .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#beikvbmmax .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#beikvbmmax .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#beikvbmmax div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+<table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+  <caption>Initial overview of the dataset for cohort 3.</caption>
+  <thead>
+    <tr class="gt_heading">
+      <td colspan="7" class="gt_heading gt_title gt_font_normal gt_bottom_border" style="">Counts for the dataset</td>
+    </tr>
+    
+    <tr class="gt_col_headings">
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="Session">Session</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="start">start</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="end">end</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="length">length</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="visits">visits</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="pokes">pokes</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="licks">licks</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td headers="Session" class="gt_row gt_right">1</td>
+<td headers="start" class="gt_row gt_right">2024-10-29</td>
+<td headers="end" class="gt_row gt_right">2024-11-04</td>
+<td headers="length" class="gt_row gt_center">6</td>
+<td headers="visits" class="gt_row gt_right">22,281</td>
+<td headers="pokes" class="gt_row gt_right">131,638</td>
+<td headers="licks" class="gt_row gt_right">329,620</td></tr>
+    <tr><td headers="Session" class="gt_row gt_right">2</td>
+<td headers="start" class="gt_row gt_right">2024-11-04</td>
+<td headers="end" class="gt_row gt_right">2024-11-08</td>
+<td headers="length" class="gt_row gt_center">4</td>
+<td headers="visits" class="gt_row gt_right">12,142</td>
+<td headers="pokes" class="gt_row gt_right">71,007</td>
+<td headers="licks" class="gt_row gt_right">183,387</td></tr>
+    <tr><td headers="Session" class="gt_row gt_right">3</td>
+<td headers="start" class="gt_row gt_right">2024-11-08</td>
+<td headers="end" class="gt_row gt_right">2024-11-12</td>
+<td headers="length" class="gt_row gt_center">4</td>
+<td headers="visits" class="gt_row gt_right">9,735</td>
+<td headers="pokes" class="gt_row gt_right">56,926</td>
+<td headers="licks" class="gt_row gt_right">130,539</td></tr>
+  </tbody>
+  
+  
+</table>
+</div>
+</div>
+</div>
+<div class="cell page-columns page-full">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>visits_c3 <span class="sc">%&gt;%</span> </span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Session <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> </span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>           StartDate <span class="sc">==</span> <span class="fu">ymd</span>(<span class="st">"2024-11-03"</span>) <span class="sc">&amp;</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>           EndDate <span class="sc">==</span> <span class="fu">ymd</span>(<span class="st">"2024-11-03"</span>) <span class="sc">&amp;</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>           StartTime <span class="sc">&gt;=</span> lubridate<span class="sc">::</span><span class="fu">hms</span>(<span class="st">"02:57:00"</span>) <span class="sc">&amp;</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>           EndTime <span class="sc">&lt;=</span> lubridate<span class="sc">::</span><span class="fu">hms</span>(<span class="st">"03:03:00"</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(VisitID, VisitOrder) <span class="sc">%&gt;%</span> </span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="fu">c</span>((VisitID<span class="sc">:</span>Animal), Sex, Group, StartTime, EndTime, Corner, NosepokeNumber, LickNumber)) <span class="sc">%&gt;%</span> </span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gt</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_header</span>(<span class="at">title =</span> <span class="st">"Data Check"</span>,</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>             <span class="at">subtitle =</span> <span class="st">"Events during the time change for the end of daylight savings time on 11/3/24"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cols_label</span>(<span class="at">VisitID =</span> <span class="st">"ID"</span>,</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>             <span class="at">VisitOrder =</span> <span class="st">"Order"</span>,</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>             <span class="at">StartTime =</span> <span class="st">"Start Time"</span>,</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>             <span class="at">EndTime =</span> <span class="st">"End Time"</span>,</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>             <span class="at">NosepokeNumber =</span> <span class="st">"pokes"</span>,</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>             <span class="at">LickNumber =</span> <span class="st">"licks"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display page-columns page-full">
+<div id="tbl-datacheck-timechange" class="anchored page-columns page-full">
+
+<div id="tvfhxlcjbe" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;" class="page-columns page-full">
+<style>#tvfhxlcjbe table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#tvfhxlcjbe thead, #tvfhxlcjbe tbody, #tvfhxlcjbe tfoot, #tvfhxlcjbe tr, #tvfhxlcjbe td, #tvfhxlcjbe th {
+  border-style: none;
+}
+
+#tvfhxlcjbe p {
+  margin: 0;
+  padding: 0;
+}
+
+#tvfhxlcjbe .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#tvfhxlcjbe .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#tvfhxlcjbe .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#tvfhxlcjbe .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#tvfhxlcjbe .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#tvfhxlcjbe .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#tvfhxlcjbe .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#tvfhxlcjbe .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#tvfhxlcjbe .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#tvfhxlcjbe .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#tvfhxlcjbe .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#tvfhxlcjbe .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#tvfhxlcjbe .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#tvfhxlcjbe .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#tvfhxlcjbe .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#tvfhxlcjbe .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#tvfhxlcjbe .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#tvfhxlcjbe .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#tvfhxlcjbe .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#tvfhxlcjbe .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#tvfhxlcjbe .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#tvfhxlcjbe .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#tvfhxlcjbe .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#tvfhxlcjbe .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#tvfhxlcjbe .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#tvfhxlcjbe .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#tvfhxlcjbe .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#tvfhxlcjbe .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#tvfhxlcjbe .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#tvfhxlcjbe .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#tvfhxlcjbe .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#tvfhxlcjbe .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#tvfhxlcjbe .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#tvfhxlcjbe .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#tvfhxlcjbe .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#tvfhxlcjbe .gt_left {
+  text-align: left;
+}
+
+#tvfhxlcjbe .gt_center {
+  text-align: center;
+}
+
+#tvfhxlcjbe .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#tvfhxlcjbe .gt_font_normal {
+  font-weight: normal;
+}
+
+#tvfhxlcjbe .gt_font_bold {
+  font-weight: bold;
+}
+
+#tvfhxlcjbe .gt_font_italic {
+  font-style: italic;
+}
+
+#tvfhxlcjbe .gt_super {
+  font-size: 65%;
+}
+
+#tvfhxlcjbe .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#tvfhxlcjbe .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#tvfhxlcjbe .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#tvfhxlcjbe .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#tvfhxlcjbe .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#tvfhxlcjbe .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#tvfhxlcjbe .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#tvfhxlcjbe .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#tvfhxlcjbe div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+<table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+  <thead>
+    <tr class="gt_heading">
+      <td colspan="10" class="gt_heading gt_title gt_font_normal" style="">Data Check</td>
+    </tr>
+    <tr class="gt_heading">
+      <td colspan="10" class="gt_heading gt_subtitle gt_font_normal gt_bottom_border" style="">Events during the time change for the end of daylight savings time on 11/3/24</td>
+    </tr>
+    <tr class="gt_col_headings">
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="VisitID">ID</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="VisitOrder">Order</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="Animal">Animal</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="Sex">Sex</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="Group">Group</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="StartTime">Start Time</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="EndTime">End Time</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="Corner">Corner</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="NosepokeNumber">pokes</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="LickNumber">licks</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td headers="VisitID" class="gt_row gt_right">17453</td>
+<td headers="VisitOrder" class="gt_row gt_right">1140</td>
+<td headers="Animal" class="gt_row gt_left">P264709-1</td>
+<td headers="Sex" class="gt_row gt_left">Male</td>
+<td headers="Group" class="gt_row gt_left">auto HET</td>
+<td headers="StartTime" class="gt_row gt_center">02:57:32</td>
+<td headers="EndTime" class="gt_row gt_center">02:57:43</td>
+<td headers="Corner" class="gt_row gt_right">1</td>
+<td headers="NosepokeNumber" class="gt_row gt_right">3</td>
+<td headers="LickNumber" class="gt_row gt_right">61</td></tr>
+    <tr><td headers="VisitID" class="gt_row gt_right">17454</td>
+<td headers="VisitOrder" class="gt_row gt_right">1094</td>
+<td headers="Animal" class="gt_row gt_left">P264743-4</td>
+<td headers="Sex" class="gt_row gt_left">Male</td>
+<td headers="Group" class="gt_row gt_left">auto HET</td>
+<td headers="StartTime" class="gt_row gt_center">02:57:43</td>
+<td headers="EndTime" class="gt_row gt_center">02:58:28</td>
+<td headers="Corner" class="gt_row gt_right">1</td>
+<td headers="NosepokeNumber" class="gt_row gt_right">6</td>
+<td headers="LickNumber" class="gt_row gt_right">0</td></tr>
+    <tr><td headers="VisitID" class="gt_row gt_right">17455</td>
+<td headers="VisitOrder" class="gt_row gt_right">922</td>
+<td headers="Animal" class="gt_row gt_left">P229796-2</td>
+<td headers="Sex" class="gt_row gt_left">Male</td>
+<td headers="Group" class="gt_row gt_left">control</td>
+<td headers="StartTime" class="gt_row gt_center">02:57:47</td>
+<td headers="EndTime" class="gt_row gt_center">02:57:52</td>
+<td headers="Corner" class="gt_row gt_right">4</td>
+<td headers="NosepokeNumber" class="gt_row gt_right">4</td>
+<td headers="LickNumber" class="gt_row gt_right">0</td></tr>
+    <tr><td headers="VisitID" class="gt_row gt_right">17456</td>
+<td headers="VisitOrder" class="gt_row gt_right">1141</td>
+<td headers="Animal" class="gt_row gt_left">P264709-1</td>
+<td headers="Sex" class="gt_row gt_left">Male</td>
+<td headers="Group" class="gt_row gt_left">auto HET</td>
+<td headers="StartTime" class="gt_row gt_center">02:58:21</td>
+<td headers="EndTime" class="gt_row gt_center">02:58:26</td>
+<td headers="Corner" class="gt_row gt_right">2</td>
+<td headers="NosepokeNumber" class="gt_row gt_right">9</td>
+<td headers="LickNumber" class="gt_row gt_right">0</td></tr>
+    <tr><td headers="VisitID" class="gt_row gt_right">17457</td>
+<td headers="VisitOrder" class="gt_row gt_right">1142</td>
+<td headers="Animal" class="gt_row gt_left">P264709-1</td>
+<td headers="Sex" class="gt_row gt_left">Male</td>
+<td headers="Group" class="gt_row gt_left">auto HET</td>
+<td headers="StartTime" class="gt_row gt_center">02:58:28</td>
+<td headers="EndTime" class="gt_row gt_center">02:58:49</td>
+<td headers="Corner" class="gt_row gt_right">1</td>
+<td headers="NosepokeNumber" class="gt_row gt_right">4</td>
+<td headers="LickNumber" class="gt_row gt_right">0</td></tr>
+    <tr><td headers="VisitID" class="gt_row gt_right">17458</td>
+<td headers="VisitOrder" class="gt_row gt_right">885</td>
+<td headers="Animal" class="gt_row gt_left">P229796-1</td>
+<td headers="Sex" class="gt_row gt_left">Male</td>
+<td headers="Group" class="gt_row gt_left">auto HET</td>
+<td headers="StartTime" class="gt_row gt_center">02:58:58</td>
+<td headers="EndTime" class="gt_row gt_center">02:59:01</td>
+<td headers="Corner" class="gt_row gt_right">1</td>
+<td headers="NosepokeNumber" class="gt_row gt_right">0</td>
+<td headers="LickNumber" class="gt_row gt_right">0</td></tr>
+    <tr><td headers="VisitID" class="gt_row gt_right">17459</td>
+<td headers="VisitOrder" class="gt_row gt_right">1143</td>
+<td headers="Animal" class="gt_row gt_left">P264709-1</td>
+<td headers="Sex" class="gt_row gt_left">Male</td>
+<td headers="Group" class="gt_row gt_left">auto HET</td>
+<td headers="StartTime" class="gt_row gt_center">02:59:11</td>
+<td headers="EndTime" class="gt_row gt_center">02:59:16</td>
+<td headers="Corner" class="gt_row gt_right">3</td>
+<td headers="NosepokeNumber" class="gt_row gt_right">9</td>
+<td headers="LickNumber" class="gt_row gt_right">0</td></tr>
+    <tr><td headers="VisitID" class="gt_row gt_right">17460</td>
+<td headers="VisitOrder" class="gt_row gt_right">923</td>
+<td headers="Animal" class="gt_row gt_left">P229796-2</td>
+<td headers="Sex" class="gt_row gt_left">Male</td>
+<td headers="Group" class="gt_row gt_left">control</td>
+<td headers="StartTime" class="gt_row gt_center">02:59:20</td>
+<td headers="EndTime" class="gt_row gt_center">02:59:31</td>
+<td headers="Corner" class="gt_row gt_right">3</td>
+<td headers="NosepokeNumber" class="gt_row gt_right">6</td>
+<td headers="LickNumber" class="gt_row gt_right">27</td></tr>
+    <tr><td headers="VisitID" class="gt_row gt_right">17461</td>
+<td headers="VisitOrder" class="gt_row gt_right">1144</td>
+<td headers="Animal" class="gt_row gt_left">P264709-1</td>
+<td headers="Sex" class="gt_row gt_left">Male</td>
+<td headers="Group" class="gt_row gt_left">auto HET</td>
+<td headers="StartTime" class="gt_row gt_center">03:00:40</td>
+<td headers="EndTime" class="gt_row gt_center">03:00:46</td>
+<td headers="Corner" class="gt_row gt_right">1</td>
+<td headers="NosepokeNumber" class="gt_row gt_right">6</td>
+<td headers="LickNumber" class="gt_row gt_right">0</td></tr>
+    <tr><td headers="VisitID" class="gt_row gt_right">17462</td>
+<td headers="VisitOrder" class="gt_row gt_right">886</td>
+<td headers="Animal" class="gt_row gt_left">P229796-1</td>
+<td headers="Sex" class="gt_row gt_left">Male</td>
+<td headers="Group" class="gt_row gt_left">auto HET</td>
+<td headers="StartTime" class="gt_row gt_center">03:02:02</td>
+<td headers="EndTime" class="gt_row gt_center">03:02:03</td>
+<td headers="Corner" class="gt_row gt_right">1</td>
+<td headers="NosepokeNumber" class="gt_row gt_right">0</td>
+<td headers="LickNumber" class="gt_row gt_right">0</td></tr>
+    <tr><td headers="VisitID" class="gt_row gt_right">17463</td>
+<td headers="VisitOrder" class="gt_row gt_right">924</td>
+<td headers="Animal" class="gt_row gt_left">P229796-2</td>
+<td headers="Sex" class="gt_row gt_left">Male</td>
+<td headers="Group" class="gt_row gt_left">control</td>
+<td headers="StartTime" class="gt_row gt_center">03:02:04</td>
+<td headers="EndTime" class="gt_row gt_center">03:02:14</td>
+<td headers="Corner" class="gt_row gt_right">3</td>
+<td headers="NosepokeNumber" class="gt_row gt_right">4</td>
+<td headers="LickNumber" class="gt_row gt_right">29</td></tr>
+    <tr><td headers="VisitID" class="gt_row gt_right">17464</td>
+<td headers="VisitOrder" class="gt_row gt_right">887</td>
+<td headers="Animal" class="gt_row gt_left">P229796-1</td>
+<td headers="Sex" class="gt_row gt_left">Male</td>
+<td headers="Group" class="gt_row gt_left">auto HET</td>
+<td headers="StartTime" class="gt_row gt_center">03:02:14</td>
+<td headers="EndTime" class="gt_row gt_center">03:02:26</td>
+<td headers="Corner" class="gt_row gt_right">3</td>
+<td headers="NosepokeNumber" class="gt_row gt_right">7</td>
+<td headers="LickNumber" class="gt_row gt_right">29</td></tr>
+    <tr><td headers="VisitID" class="gt_row gt_right">17465</td>
+<td headers="VisitOrder" class="gt_row gt_right">925</td>
+<td headers="Animal" class="gt_row gt_left">P229796-2</td>
+<td headers="Sex" class="gt_row gt_left">Male</td>
+<td headers="Group" class="gt_row gt_left">control</td>
+<td headers="StartTime" class="gt_row gt_center">03:02:20</td>
+<td headers="EndTime" class="gt_row gt_center">03:02:26</td>
+<td headers="Corner" class="gt_row gt_right">1</td>
+<td headers="NosepokeNumber" class="gt_row gt_right">7</td>
+<td headers="LickNumber" class="gt_row gt_right">0</td></tr>
+    <tr><td headers="VisitID" class="gt_row gt_right">17466</td>
+<td headers="VisitOrder" class="gt_row gt_right">1145</td>
+<td headers="Animal" class="gt_row gt_left">P264709-1</td>
+<td headers="Sex" class="gt_row gt_left">Male</td>
+<td headers="Group" class="gt_row gt_left">auto HET</td>
+<td headers="StartTime" class="gt_row gt_center">03:02:38</td>
+<td headers="EndTime" class="gt_row gt_center">03:02:54</td>
+<td headers="Corner" class="gt_row gt_right">1</td>
+<td headers="NosepokeNumber" class="gt_row gt_right">3</td>
+<td headers="LickNumber" class="gt_row gt_right">80</td></tr>
+  </tbody>
+  
+  
+</table>
+<div class="quarto-table-caption margin-caption">Table&nbsp;2:  <p>Events during daylight savings end line up correctly.</p> </div></div>
+</div>
+</div>
+</div>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
