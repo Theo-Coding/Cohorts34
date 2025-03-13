@@ -136,11 +136,10 @@ for(x in 2:length(allExperiments)){
   
   }
 }
-visitsc3 %>%
-	select(-Start, -End) %>% #Removing Start and End
-  rename("Tag" = AnimalTag,
-     	"Module" = ModuleName,
-     	)
+miceC3 <- miceC3 %>% 
+  rename("AnimalTag" = Tag)
+  miceC3$Session <- NULL
+
   visitsc3 <- left_join(visitsc3, BooleanReportersC3, by=c("Session", "VisitID")) %>% 
   mutate(VisitType = case_when(
                     FR == TRUE & Reward == TRUE & LickNumber > 0 ~ "Rewarded", #If the mouse got a reward
@@ -152,10 +151,11 @@ visitsc3 %>%
                     .default = "Error!"
                     ),
                     VisitType = as.factor(VisitType),
-                    
   )
-  NosePokesc3%>%
+  
+UniqueVisits <- visitsc3
 visitsc3 <- left_join(visitsc3, NosePokesc3, by=c("Session","VisitID"))
+visitsc3 <- left_join(visitsc3, miceC3, by="AnimalTag")
 
  
 #Cleaning out NA with default values
@@ -165,16 +165,6 @@ visitsc3$SideError[is.na(visitsc3$SideError)] <- 0 #Default SideError is 0
 visitsc3$ConditionError[is.na(visitsc3$ConditionError)] <- 0 #Default ConditionError is 0
 visitsc3$TimeError[is.na(visitsc3$TimeError)] <- 0 #Default TimeError is 0
 
-#Default lick number, contact time, and duration are all set to the defaults from visits file
-# visitsc3$LickNumber.y[is.na(visitsc3$LickNumber.y)] <- visitsc3$LickNumber.x
-# visitsc3$LickContactTime.y[is.na(visitsc3$LickContactTime.y)] <- visitsc3$LickContactTime.x
-# visitsc3$LickDuration.y[is.na(visitsc3$LickDuration.y)] <- visitsc3$LickDuration.x
-
-
-#visitsc3$Start[is.na(visitsc3$Start)] <- ymd_hms(paste(as.character(visitsc3$VisitStartDate), as.character(visitsc3$VisitStartTime))) #Default start for licks is the start of the visit and
-#visitsc3$End[is.na(visitsc3$End)] <- ymd_hms(paste(as.character(visitsc3$VisitEndDate), as.character(visitsc3$VisitEndTime)))
-#Default End for the licks is end of the visit
-
 #Default for all of these is 0
 visitsc3$AirState[is.na(visitsc3$AirState)] <- 0
 visitsc3$DoorState[is.na(visitsc3$DoorState)] <- 0
@@ -183,46 +173,227 @@ visitsc3$LED2State[is.na(visitsc3$LED2State)] <- 0
 visitsc3$LED3State[is.na(visitsc3$LED3State)] <- 0
 
 ```
+
+
 ```{r}
+
+# ExperimentsDay1 = filter(uniqueVisits, ExperimentDay == 1)
 visitsc3 <- visitsc3 %>% 
   mutate(Fluid = if_else(Corner %in% c(2,4), "Water", "Sucrose"),
-         Probability = if_else(
-                     ((Corner %in% c(3,4) & ((ymd("2024/10/29") <= Start.x) & (Start.x) <= ymd("2024/11/3"))) |
-                     (Corner %in% c(1,2) & ((ymd("2024/11/4") <= Start.x) & (Start.x) <= ymd("2024/11/7")))  |
-                     (Corner %in% c(3,4) & ((ymd("2024/11/8") <= Start.x) & (Start.x) <= ymd("2024/11/11"))) |
-                     (Corner %in% c(1,2) & ((ymd("2024/11/12") <= Start.x) & (Start.x) <= ymd("2024/11/17")))|
-                     (Corner %in% c(3,4) & ((ymd("2024/11/18") <= Start.x) & (Start.x) <= ymd("2024/11/21"))))
-                     , "Safe", "Risky"))
+         Probability = if_else(Corner %in% c(1,2), 
+          case_when( #If mouse has visited corner 1 or 2
+           (ymd("2024/10/29") <= Start.x) & (Start.x < ymd("2024/11/4")) ~ "Risky",
+           (ymd("2024/11/4") <= Start.x) & (Start.x < ymd("2024/11/8")) ~ "Safe",
+           (ymd("2024/11/8") <= Start.x) & (Start.x < ymd("2024/11/12")) ~ "Risky",
+           (ymd("2024/11/12") <= Start.x) & (Start.x < ymd("2024/11/18")) ~ "Safe",
+           (ymd("2024/11/18") <= Start.x) & (Start.x < ymd("2024/11/23")) ~ "Risky"
+                   ),
+         case_when(
+           (ymd("2024/10/29") <= Start.x) & (Start.x) < ymd("2024/11/4") ~ "Safe",
+           (ymd("2024/11/4") <= Start.x) & (Start.x < ymd("2024/11/8")) ~ "Risky",
+           (ymd("2024/11/8") <= Start.x) & (Start.x < ymd("2024/11/12")) ~ "Safe",
+           (ymd("2024/11/12") <= Start.x) & (Start.x < ymd("2024/11/18")) ~ "Risky",
+           (ymd("2024/11/18") <= Start.x) & (Start.x < ymd("2024/11/23")) ~ "Safe"
+                  )
+              ), #End of if_else
+         ExperimentDay = as.numeric(ceiling(difftime(Start.x, ymd("2024/10/29"), units = "days"))),
+  )
 
+UniqueVisits <- UniqueVisits %>% 
+  mutate(Fluid = if_else(Corner %in% c(2,4), "Water", "Sucrose"),
+                  Probability = if_else(Corner %in% c(1,2), 
+          case_when( #If mouse has visited corner 1 or 2
+           (ymd("2024/10/29") <= Start) & (Start < ymd("2024/11/4")) ~ "Risky",
+           (ymd("2024/11/4") <= Start) & (Start < ymd("2024/11/8")) ~ "Safe",
+           (ymd("2024/11/8") <= Start) & (Start < ymd("2024/11/12")) ~ "Risky",
+           (ymd("2024/11/12") <= Start) & (Start < ymd("2024/11/18")) ~ "Safe",
+           (ymd("2024/11/18") <= Start) & (Start < ymd("2024/11/23")) ~ "Risky"
+                   ),
+         case_when(
+           (ymd("2024/10/29") <= Start) & (Start) < ymd("2024/11/4") ~ "Safe",
+           (ymd("2024/11/4") <= Start) & (Start < ymd("2024/11/8")) ~ "Risky",
+           (ymd("2024/11/8") <= Start) & (Start < ymd("2024/11/12")) ~ "Safe",
+           (ymd("2024/11/12") <= Start) & (Start < ymd("2024/11/18")) ~ "Risky",
+           (ymd("2024/11/18") <= Start) & (Start < ymd("2024/11/23")) ~ "Safe"
+                  )
+              ), #End of if_else
+         ExperimentDay = as.numeric(ceiling(difftime(Start, ymd("2024/10/29"), units = "days"))),
+         )
 
-visitsc3%>%
-  group_by(Session) %>%
-  summarise(start = min(as.Date(Start.x)),
-        	end = max(as.Date(Start.x)),
-        	visits = n_distinct(VisitID),
-        #	Pokes = sum(LickDuration > 0),
-        	licks = sum(LickNumber.x),
+VisitAvg <- data.frame(Visits = c(), Day = c())
+AllAnimals <- data.frame(AnimalTag = unique(visitsc3$AnimalTag), Visits = rep(c(0), each = length(unique(visitsc3$AnimalTag))))
+
+UniqueVisits %>%
+  group_by(Session, AnimalTag) %>%
+  summarise(start = min(as.Date(Start)),
+        	end = max(as.Date(Start)),
+        	visits = n(),
+        	licks = sum(LickNumber),
         	RiskyVisits = sum(Probability == "Risky"),
         	Water = sum(Fluid == "Water"),
-        	Rewarded = round(sum(VisitType == "Rewarded") * n_distinct(VisitID)/n(), 0), #There is probably a better way to do this, but this works
-        	Unwanted = round(sum(VisitType == "Unwanted") * n_distinct(VisitID)/n(), 0), #Kind of...
-        	Unrewarded = round(sum(VisitType == "Unrewarded") * n_distinct(VisitID)/n(), 0),
-        	Explorer = round(sum(VisitType == "Explorer") * n_distinct(VisitID)/n(), 0),
-        	IncorrectRewards = round(sum(VisitType == "Incorrect_R") * n_distinct(VisitID)/n(), 0),
-        	IncorrectRewardFR = round(sum(VisitType == "Incorrect_RFR") * n_distinct(VisitID)/n(), 0),
+        	Rewarded = sum(VisitType == "Rewarded"),
+        	Unwanted = sum(VisitType == "Unwanted"),
+        	Unrewarded = sum(VisitType == "Unrewarded"),
+        	Explorer = sum(VisitType == "Explorer"),
+        	IncorrectRewards = sum(VisitType == "Incorrect_R"),
+        	IncorrectRewardFR = sum(VisitType == "Incorrect_RFR"),
+          UniqueDays = n_distinct(ExperimentDay)
         	) %>%
   gt() %>%
-  tab_header(title = "Counts for the dataset") %>%
+  tab_header(title = "Counts for the dataset, All Mice") %>%
     tab_caption("Initial overview of the dataset for cohort 3.")
 
+UniqueVisits %>%
+  group_by(AnimalTag) %>%
+  filter(sum(VisitType == "Rewarded") < 10) %>% #Only showing mice who appear to have an issue with the amount of rewarded visits counted
+  summarise(visits = n(),
+        	licks = sum(LickNumber),
+        	RiskyVisits = sum(Probability == "Risky"),
+        	Rewarded = sum(VisitType == "Rewarded"),
+        	Unwanted = sum(VisitType == "Unwanted"),
+        	Unrewarded = sum(VisitType == "Unrewarded"),
+        	Explorer = sum(VisitType == "Explorer"),
+        	) %>%
+  gt() %>%
+  tab_header(title = "Problematic Mice :(") %>%
+    tab_caption("Initial overview of the dataset for cohort 3.")
 
- glimpse(visitsc3)
 
 ```
 
 ```{r}
-dotchart()
+visitsc3 %>%
+  group_by(AnimalTag, ExperimentDay, VisitType, Probability) %>% 
+  filter(VisitType != "Incorrect_R" & VisitType != "Incorrect_RFR") %>% 
+  summarize(visits = n_distinct(Session, VisitID),
+            licks = sum(LickNumber.y),
+            .groups = "keep") %>% 
+      ggplot(aes(x = ExperimentDay, y = visits, fill = VisitType, group = AnimalTag)) + #This sets up the x and y axis variables
+  geom_line(aes(group = AnimalTag), color = "darkgray") +
+  geom_point(shape = 21, size = 2, color = "black") +
+
+  scale_x_continuous(name = "Experiment Day",
+                     limits = c(0, 25)) +
+  dbGroupColorScale +
+  labs(title = "Risk Preference and Visit Type",
+       y = "Visits/Day") +
+  theme_minimal() + #Setting theme
+  guides(color = "none", fill = "none") +
+  theme(panel.spacing = unit(1, "lines"),
+        strip.background = element_rect(color = "darkgray"), #Decides the color for the outline of boxes
+        strip.text = element_text(face = "italic", color = "darkgray")) + #Decides the text color in the white boxes on axes
+  facet_grid(Probability ~ VisitType) #This decides what variables are displayed on the axis boxes
 
 
+```
+
+
+```{r}
+visitsc3 %>%
+  
+  group_by(AnimalTag, ExperimentDay, Probability, Fluid) %>% 
+  
+  filter(VisitType != "Incorrect_R" & VisitType != "Incorrect_RFR") %>% 
+  
+  summarize(visits = n_distinct(Session, VisitID),
+            licks = sum(LickNumber.y),
+            .groups = "keep") %>% 
+  
+      ggplot(aes(x = ExperimentDay, y = visits, fill = Fluid, group = AnimalTag)) + #This sets up the x and y axis variables
+  geom_line(aes(group = AnimalTag), color = "darkgray") +
+  geom_point(shape = 21, size = 2, color = "black") +
+  geom_vline(xintercept = c(6.5, 10.5, 14.5, 20.5), color = "gray", linetype = "dashed") +
+
+  scale_x_continuous(name = "Experiment Day",
+                     limits = c(0, 25)) +
+  dbGroupColorScale +
+  labs(title = "Visits Per Day of Each Solution",
+       y = "Visits/Day", caption = "Dashed lines indicate days the position of each solution was swapped") +
+  theme_minimal() + #Setting theme
+  guides(color = "none", fill = "none") +
+  theme(panel.spacing = unit(1, "lines"),
+        strip.background = element_rect(color = "darkgray"), #Decides the color for the outline of boxes
+        strip.text = element_text(face = "italic", color = "darkgray")) + #Decides the text color in the white boxes on axes
+  facet_grid(Probability ~ Fluid) #This decides what variables are displayed on the axis boxes
+
+```
+
+```{r}
+visitsc3 %>%
+  
+  group_by(AnimalTag, ExperimentDay, Probability, Fluid) %>% 
+  
+  filter(VisitType != "Incorrect_R" & VisitType != "Incorrect_RFR") %>% 
+  
+  summarize(visits = n_distinct(Session, VisitID),
+            licks = sum(LickNumber.y, na.rm = TRUE),
+            .groups = "keep") %>% 
+  
+      ggplot(aes(x = ExperimentDay, y = licks, fill = Fluid, group = AnimalTag)) + #This sets up the x and y axis variables
+  geom_line(aes(group = AnimalTag), color = "darkgray") +
+  geom_point(shape = 21, size = 2, color = "black") +
+  geom_vline(xintercept = c(6.5, 10.5, 14.5, 20.5), color = "gray", linetype = "dashed") +
+  scale_x_continuous(name = "Experiment Day",
+                     limits = c(0, 25)) +
+  dbGroupColorScale +
+  labs(title = "Licks Per Day of Each Solution",
+       y = "Licks/Day", caption = "Dashed lines indicate days the position of each solution was swapped") +
+  theme_minimal() + #Setting theme
+  guides(color = "none", fill = "none") +
+  theme(panel.spacing = unit(1, "lines"),
+        strip.background = element_rect(color = "darkgray"), #Decides the color for the outline of boxes
+        strip.text = element_text(face = "italic", color = "darkgray")) + #Decides the text color in the white boxes on axes
+  facet_grid(Probability ~ Fluid) #This decides what variables are displayed on the axis boxes
+```
+
+
+
+```{r}
+
+UniqueVisits %>% 
+  group_by(ExperimentDay) %>%
+  summarise(Visits = n_distinct(Session, VisitID),
+            Sucrose = sum(Fluid == "Sucrose"),
+            Water = sum(Fluid == "Water"),
+            Risky = sum(Probability == "Risky"),
+            Safe = sum(Probability == "Safe")
+            ) %>% 
+  gt()
+
+
+```
+
+
+```{r}
+#Please note Mouse #992000001823391 has a drinking problem
+visitsc3 %>%
+  
+  group_by(AnimalTag, ExperimentDay, Corner, Sex) %>% 
+  
+  filter(VisitType != "Incorrect_R" & VisitType != "Incorrect_RFR") %>% 
+  
+  summarize(visits = n_distinct(Session, VisitID),
+            licks = sum(LickNumber.y, na.rm = TRUE),
+            .groups = "keep") %>% 
+  
+      ggplot(aes(x = ExperimentDay, y = visits, fill = Corner, group = AnimalTag)) + #This sets up the x and y axis variables
+  geom_line(aes(group = AnimalTag), color = "darkgray") +
+  geom_point(shape = 21, size = 2, color = "black") +
+  geom_vline(xintercept = c(6.5, 10.5, 14.5, 20.5), color = "gray", linetype = "dashed") +
+  scale_x_continuous(name = "Experiment Day",
+                     limits = c(0, 25)) +
+  
+  dbGroupColorScale +
+  labs(title = "Visits Per Day of Each Corner",
+       y = "Visits/Day", caption = "Dashed lines indicate days the position of each solution was swapped") +
+  theme_minimal() + #Setting theme
+  guides(color = "none", fill = "none") +
+  theme(panel.spacing = unit(1, "lines"),
+        strip.background = element_rect(color = "darkgray"), #Decides the color for the outline of boxes
+        strip.text = element_text(face = "italic", color = "darkgray")) + #Decides the text color in the white boxes on axes
+  
+  #This decides what variables are displayed on the axis boxes
+  facet_grid(Sex ~ Corner, labeller = labeller(.cols = c('1' = "Corner 1", '2' = "Corner 2", '3' = "Corner 3", '4' = "Corner 4"), 
+                                                 ) ) #.rows = c('1' = "Cage 1", '2' = "Cage 2")
 
 ```
