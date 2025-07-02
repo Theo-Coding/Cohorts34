@@ -14,7 +14,7 @@ format:
     highlight-style: pygments
     theme: litera
 ---
-
+# Loading Packages
 ```{r}
 #| label: setup
 #| include: false
@@ -27,15 +27,15 @@ source(here("R", "SucroseLearningSetup.R"))
 source(here("R", "ICTablespecs.r"))
 ```
 
-# Cohort Description ==========
+# Cohort Description - - - - - - -
 
 
 ## Special considerations
 
 This cohort started on October 29th, 2024 and the USA ended the daylight savings time on November 3rd, 2024. We need to ensure that our data aligns correctly after the time change.
 
-# Loading Data ==============
-### Loading all mice from archive files
+# Loading Data - - - - - - - - - - 
+##  Loading all mice from archive files
 ```{r}
 
 
@@ -50,7 +50,7 @@ miceC <- read_tsv(archive_read(archive = experimentsC[1], file = 'Animals.txt'),
 for(x in 2:length(experimentsC)){
   MiceTempC <- read_tsv(archive_read(archive = experimentsC[x], file = 'Animals.txt'), col_names = T, col_types = animal.col.spec) #Adding all other experiments, them binding them to main miceC object
   miceC <- rbind(miceC, MiceTempC)
-}
+} #There is an error in many of the data files where there are extra tab separators which are causing the program to read incorrectly how many columns there are.
 
 miceC <- unique(miceC) %>%  #Getting rid of AnimalNotes, changing AnimalName and GroupName to be same in all data structures.
   filter(GroupName != "Default") %>%
@@ -58,40 +58,9 @@ miceC <- unique(miceC) %>%  #Getting rid of AnimalNotes, changing AnimalName and
   rename("Animal" = AnimalName,
          "Group" = GroupName
          )
-  problems(MiceTempC)
 ```
 
-## Mouse overview ------------------
-
-```{r}
-#| label: tbl-dataset-size
-#| tbl-cap: "Distribution of sexes and genotypes within cohort 3 & 4."
-#| tbl-cap-location: margin
-
-
-miceC %>%
-  count(Group, Sex) %>% #
-  pivot_wider(names_from = Sex, values_from = n) %>%
-  rowwise() %>%
-  mutate(total = sum(Female, Male, na.rm = T)) %>% 
-  gt(rowname_col = "Group") %>% 
-  tab_header(title = "Mouse Count", 
-             subtitle = "Cohorts 3 & 4 and 1 week of 5") %>% 
-  sub_missing() %>% 
-  grand_summary_rows(columns = (Female:total),
-                     fns = list(
-                       total ~ sum(., na.rm = T)
-                     )) %>% 
-  gt_highlight_cols(columns = total,
-                    fill = "lightgray") %>% 
-  tab_style(
-    locations = cells_grand_summary(),
-    style = cell_fill(color = "gray")
-  )
-
-```
-
-## Data Loading
+##  Data Loading
 
 ```{r}
 #| code-fold: true
@@ -126,9 +95,6 @@ for(x in 2:length(experimentsC)){ #Iterate through all experiments, grab their n
   
   }
 }
-```
-
-```{r}
   #Adding the data from miceC to visitsC so all visits have mouse group, sex, etc
   visitsC <- left_join(visitsC, miceC, by="AnimalTag") %>% 
   filter(AnimalTag != "992000001819774")
@@ -186,24 +152,27 @@ for(x in 2:length(experimentsC)){ #Iterate through all experiments, grab their n
                     FR == FALSE & Reward == FALSE & LickNumber == 0 ~ "Explorer", #FR and Reward were not given
                     .default = "Error!"
                     ), 
-         Group = factor(Group, levels = c("control", "auto HET", "iMSN HET", "double HET")),
+         Group = factor(Group, levels = c("control", "auto HET", "iMSN HET", "double HET", "")),
          VisitType = factor(VisitType, levels = c("Rewarded", "Unrewarded", "Unwanted", "Explorer", "Error!")),
          Fluid = factor(Fluid, levels = c("Sucrose", "Water")),
-         VisitStartDate = as.Date(Start),
      	VisitStartTime = as_hms(Start),
-     	VisitEndDate = as.Date(End),
      	VisitEndTime = as_hms(End),
       ExperimentDay = case_when(
         Session <= 5 ~ as.numeric(ceiling(difftime(Start, ymd("2024/10/29"), units = "days"))),
         (Session > 5 & Session <= 10) ~ as.numeric(ceiling(difftime(Start, ymd("2025/3/17"), units = "days"))),
         Session >= 11 ~ as.numeric(ceiling(difftime(Start, ymd("2025/5/30"), units = "days")))),
   )
-
-  VisitsC %>% 
-    group_by(Session, Group) %>% 
-    max(ExperimentDay)
   
-UniqueVisitsC <- visitsC
+UniqueVisitsC <- visitsC %>% 
+    group_by(Session) %>% 
+    mutate(amog = max(ExperimentDay))
+
+# LearningCurveDS <- UniqueVisitsC %>% 
+#   filter(ExperimentDay == 1 | ExperimentDay == amog) %>% 
+#   mutate(timeDifference = as.integer(gsub("\\D", "",
+#     floor(difftime(VisitStartTime, amog, units = "hours"))
+#   ))
+#          )
 #Copying all of the visits to UniqueVisitsC, this will make every visit only 1 row in the data, 
 #as opposed to after nosepokes is added, where each visit is split into its nose pokes as well
 
@@ -226,7 +195,122 @@ is.na(visitsC$LED3State) <- 0
 
 ```
 
-### Overview Visit Stats per Mouse
+##  Creating a cleaned data table
+```{r}
+cleanDataC <- UniqueVisitsC %>% 
+  group_by(AnimalTag, ExperimentDay, VisitType, Probability, Fluid, Sex, Group) %>% 
+  filter(VisitType != "Error!" & Group != "NA") %>% 
+  summarize(
+    Choices = n_distinct(Session, VisitID),
+    Licks = sum(LickNumber),
+    Corner,
+    .groups = "keep",
+  ) %>% 
+  relocate(c(Sex, Group), .after = AnimalTag) %>% 
+  rename(Day = "ExperimentDay") %>% 
+  unique()
+
+
+cleanDataCSucrose <- cleanDataC %>%
+  filter(Fluid == "Sucrose")
+
+
+# learningCurveDS <- UniqueVisitsC %>% 
+#   group_by(AnimalTag, ExperimentDay, VisitType, Probability, Fluid, Sex, Group) %>% 
+#   filter(VisitType != "Error!" | ()) %>% 
+#   summarize(
+#     Choices = n_distinct(Session, VisitID),
+#     Licks = sum(LickNumber),
+#     Corner,
+#     .groups = "keep",
+#   ) %>% 
+#   relocate(c(Sex, Group), .after = AnimalTag) %>% 
+#   rename(Day = "ExperimentDay")
+```
+##  Adding to clean sets
+```{r}
+#Analysis for all data ------------------------------
+cleanDataC <- cleanDataC %>% 
+  group_by(AnimalTag, Day) %>% 
+  mutate(Visits = sum(Choices), choiceFrequency = Choices/Visits) %>% 
+  group_by(AnimalTag, Day, VisitType) %>% 
+  mutate(VisitTypeVisits = sum(Choices),
+         VTPreference = VisitTypeVisits/Visits) %>% 
+    group_by(AnimalTag, Day, Probability, Fluid) %>% 
+    mutate(sampleSize = sum(Choices),
+           PFVisits = sum(Choices),
+           PFPreference = Choices/sampleSize) %>% 
+  group_by(Day) %>% 
+  mutate(Mice = n_distinct(AnimalTag)) %>% 
+        group_by(Day, Group) %>%
+  mutate(MiceGroup = n_distinct(AnimalTag))
+
+#Sucrose only ---
+cleanDataCSucrose <- cleanDataCSucrose %>% 
+  group_by(AnimalTag, Day) %>% 
+  mutate(Visits = sum(Choices)) %>% 
+    group_by(AnimalTag, Day, Probability) %>%
+  mutate(RiskChoices = sum(Choices),
+         RiskPreference = RiskChoices/Visits*100) %>% 
+  group_by(AnimalTag, Day, VisitType) %>% 
+  mutate(VisitTypeVisits = sum(Choices)) %>% 
+  group_by(AnimalTag, Day, VisitType) %>% 
+      mutate(VTPreference = VisitTypeVisits/Visits) %>% 
+  group_by(Day) %>% 
+      mutate(Mice = n_distinct(AnimalTag)) %>% 
+    group_by(Day, Group) %>%
+      mutate(MiceGroup = n_distinct(AnimalTag))
+  
+  
+#Save cleanData to a spreadsheet -------------------------------
+write_xlsx(cleanDataC, path = here("data/clean", "CleanedData.xlsx"))
+saveRDS(cleanDataC, here("data/clean","CleanedData.RDS"))
+
+cleanDataC %>%
+  filter((Group == "control" | Group == "auto HET")) %>% 
+    group_by(Fluid, AnimalTag) %>% 
+  mutate(SucroseRatio = sum(Choices)/Visits, .groups = "drop") %>%
+  group_by(Probability, Fluid, VisitType, Group, AnimalTag) %>%
+  summarize(yVal = sum(choiceFrequency/max(Day) * 100),
+            .groups = "drop") %>% 
+  pivot_wider(names_from = Probability, values_from = yVal) %>%
+  arrange(AnimalTag)
+  write_csv(cleanDataC, here("data/export", "C34cleanData.csv"))
+```
+
+
+# Data Overview - - - - - - - - - - - - -
+##  Mouse overview
+
+```{r}
+#| label: tbl-dataset-size
+#| tbl-cap: "Distribution of sexes and genotypes within cohort 3 & 4."
+#| tbl-cap-location: margin
+
+
+miceC %>%
+  count(Group, Sex) %>% #
+  pivot_wider(names_from = Sex, values_from = n) %>%
+  rowwise() %>%
+  mutate(total = sum(Female, Male, na.rm = T)) %>% 
+  gt(rowname_col = "Group") %>% 
+  tab_header(title = "Mouse Count", 
+             subtitle = "Cohorts 3 & 4 and 1 week of 5") %>% 
+  sub_missing() %>% 
+  grand_summary_rows(columns = (Female:total),
+                     fns = list(
+                       total ~ sum(., na.rm = T)
+                     )) %>% 
+  gt_highlight_cols(columns = total,
+                    fill = "lightgray") %>% 
+  tab_style(
+    locations = cells_grand_summary(),
+    style = cell_fill(color = "gray")
+  )
+
+```
+
+##  Overview Visit Stats per Mouse
 
 ```{r}
 #| code-fold: true
@@ -253,9 +337,9 @@ UniqueVisitsC %>%
     tab_caption("Count of visit types for all mice.")
 ```
 
-# Analysis ==================
+# Analysis (Graphs) - - - - - - - - - - -
 
-### Risk and Type of Visits
+##  Risk and Type of Visits
 
 ```{r}
 #| label: Risk Preference and Visit Type
@@ -322,7 +406,7 @@ p1 + p2 +
 ggsave(here("figures", "preference-risktype.pdf"), width = 12, height = 6)
 ```
 
-### Risk vs Liquid
+##  Risk vs Liquid
 
 ```{r}
 UniqueVisitsC %>%
@@ -353,7 +437,7 @@ UniqueVisitsC %>%
 
 ```
 
-### Risk vs Liquid Consumption
+##  Risk vs Liquid Consumption
 
 ```{r}
 #| label: Licks Per Day Per Solution, Risky/Safe
@@ -384,7 +468,7 @@ UniqueVisitsC %>%
   facet_grid(Probability ~ Fluid) #This decides what variables are displayed on the axis boxes
 ```
 
-### Risk vs Genotype
+##  Risk vs Genotype
 
 ```{r}
 # licks per day on y, experiment day on x, stacked bar plots, sucrose top, water bottom,  added together they are the sum of licks per day. 
@@ -394,7 +478,7 @@ GroupColorsPalette = c("#878787", "blue", "#fa4e3e", "#a152fa")
 UniqueVisitsC %>%
   group_by(AnimalTag, ExperimentDay, Probability, Group) %>% 
   
-  filter(VisitType != "Error!", Fluid == "Sucrose", (ExperimentDay == 10 | ExperimentDay == 14 | ExperimentDay == 6 | ExperimentDay == 20 | ExperimentDay == 24) & Session < 6) %>% 
+  filter(VisitType != "Error!", Fluid == "Sucrose") %>% 
   summarize(visits = n_distinct(Session, VisitID),
             licks = sum(LickNumber),
             .groups = "keep") %>% 
@@ -414,7 +498,7 @@ UniqueVisitsC %>%
         strip.text = element_text(face = "italic", color = "darkgray")) + #Decides the text color in the white boxes on axes
   facet_grid(Probability ~ Group) #This decides what variables are displayed on the axis boxes
 ```
-### Average visits per Genotype (Error Bars)
+##  Average visits per Genotype (Error Bars)
 
 ```{r}
 SEBC <- visitsC %>%
@@ -454,7 +538,7 @@ SEBC
 
 ggsave(here("figures", "SucroseErrorBar.pdf"), width = 12)
 ```
-## Risk vs Type per Genotype
+##  Risk vs Type per Genotype
 ```{r}
 #| fig-width: 12
 #| fig-height: 8
@@ -564,7 +648,7 @@ GroupVisitTypes
 ggsave(here("figures", "Group-VisitType.pdf"), width = 12, height = 8)
 ```
 
-### Consumption of water-sucrose over time per mouse
+## Water/Sucrose Consumption by mouse
 ```{r}
 #| fig-width: 18
 #| fig-length: 64
@@ -596,114 +680,7 @@ LiquidConsumption
 
 ```
 
-## Creating a cleaned data table  ------------------
-```{r}
-cleanDataC <- UniqueVisitsC %>% 
-  group_by(AnimalTag, ExperimentDay, VisitType, Probability, Fluid, Sex, Group) %>% 
-  filter(VisitType != "Error!") %>% 
-  summarize(
-    Choices = n_distinct(Session, VisitID),
-    Licks = sum(LickNumber),
-    .groups = "keep",
-  ) %>% 
-  relocate(c(Sex, Group), .after = AnimalTag) %>% 
-  rename(Day = "ExperimentDay")
-
-cleanDataCSucrose <- cleanDataC %>%
-  filter(Fluid == "Sucrose")
-```
-
-```{r}
-#Analysis for all data ------------------------------
-AddingVisits <- cleanDataC %>% 
-  group_by(AnimalTag, Day) %>% 
-  summarize(Visits = sum(Choices), .groups = "drop")
-cleanDataC <- left_join(cleanDataC, AddingVisits, by=c("AnimalTag", "Day"))
-
-cleanDataC <- cleanDataC %>% 
-  mutate(ChoiceFrequency = Choices/Visits)
-                   
-#VisitType Variables ------
-VTVisits <- cleanDataC %>% 
-  group_by(AnimalTag, Day, VisitType) %>% 
-  summarize(VisitTypeVisits = sum(Choices), .groups = "keep") 
-cleanDataC <- left_join(cleanDataC, VTVisits)
-
-    VTPreference <- cleanDataC %>% 
-    group_by(AnimalTag, Day, VisitType) %>% 
-      summarize(VTPreference = VisitTypeVisits/Visits)
-    cleanDataC <- left_join(cleanDataC, VTPreference, relationship = "many-to-many")
-              
-#Probability and Fluid sorted variables
-PFPreferenceBind <- cleanDataC %>%      
-  group_by(AnimalTag, Day, Probability, Fluid) %>% 
-    mutate(sampleSize = sum(Choices),
-           PFPreference = Choices/sampleSize)
-  cleanDataC <- left_join(cleanDataC, PFPreferenceBind, relationship = "many-to-many")
-  
-  PFvisits <- cleanDataC %>% 
-    group_by(AnimalTag, Day, Probability, Fluid) %>% 
-    mutate(PFVisits = sum(Choices)) 
-    cleanDataC <- left_join(cleanDataC, PFvisits)
-    
-#Mouse Variables -------
-MiceCounter <- cleanDataC %>% 
-      group_by(Day) %>% 
-      summarize(Mice = n_distinct(AnimalTag))
-    cleanDataC <- left_join(cleanDataC, MiceCounter)
-    
-    MiceCounterGroup <- cleanDataC %>%
-      group_by(Day, Group) %>%
-      summarize(MiceGroup = n_distinct(AnimalTag))
-    cleanDataC <- left_join(cleanDataC, MiceCounterGroup)
-
-    cleanDataC <- unique(cleanDataC)
-```
-
-```{r}
-#Analysis for sucrose only ------------------------------------------
-AddingVisits <- cleanDataCSucrose %>% 
-  group_by(AnimalTag, Day) %>% 
-  summarize(Visits = sum(Choices), .groups = "drop")
-  cleanDataCSucrose <- left_join(cleanDataCSucrose, AddingVisits)
-
-AddingRiskChoices <- cleanDataCSucrose %>%
-  group_by(AnimalTag, Day, Probability) %>%
-  summarize(RiskChoices = sum(Choices), .groups = "keep")
-cleanDataCSucrose <- left_join(cleanDataCSucrose, cleanDataCSucroseTemp) %>% 
-mutate(RiskPreference = RiskChoices/Visits*100)
-
-#VisitType Variables ------
-VTVisits <- cleanDataCSucrose %>% 
-  group_by(AnimalTag, Day, VisitType) %>% 
-  summarize(VisitTypeVisits = sum(Choices), .groups = "keep") 
-cleanDataCSucrose <- left_join(cleanDataCSucrose, VTVisits)
-
-    VTPreference <- cleanDataCSucrose %>% 
-    group_by(AnimalTag, Day, VisitType) %>% 
-      summarize(VTPreference = VisitTypeVisits/Visits, .groups = "keep")
-    cleanDataCSucrose <- left_join(cleanDataCSucrose, VTPreference)
-    
-    
-#Mouse Variables -------
-    MiceCounter <- cleanDataCSucrose %>% 
-      group_by(Day) %>% 
-      summarize(Mice = n_distinct(AnimalTag), .groups = "keep")
-    cleanDataCSucrose <- left_join(cleanDataCSucrose, MiceCounter)
-        MiceCounterGroup <- cleanDataCSucrose %>%
-      group_by(Day, Group) %>%
-      summarize(MiceGroup = n_distinct(AnimalTag), .groups = "keep")
-    cleanDataCSucrose <- left_join(cleanDataCSucrose, MiceCounterGroup)
-  cleanDataCSucrose <- unique(cleanDataCSucrose)
-  
-  
-#Save cleanData to a spreadsheet -------------------------------
-write_xlsx(cleanDataC, path = here("data/clean", "CleanedData.xlsx"))
-saveRDS(cleanDataC, here("data/clean","CleanedData.RDS"))
-```
-
-
-##Displaying percent visits for mice
+##  (Unreadable) Displaying percent visits for mice
 ```{r}
 #| fig-width: 64
 #| fig-height: 32
@@ -712,7 +689,7 @@ saveRDS(cleanDataC, here("data/clean","CleanedData.RDS"))
 s1 <- cleanDataC %>%
   group_by(Day, AnimalTag) %>%
   filter(Fluid == "Water") %>% 
-  ggplot(aes(x = Day, y = ChoiceFrequency, color = AnimalTag)) +
+  ggplot(aes(x = Day, y = choiceFrequency, color = AnimalTag)) +
   geom_point(size = 5) +
   geom_line() +
   # scale_y_continuous(limits = c(0,1)) +
@@ -722,61 +699,56 @@ facet_grid(VisitType ~ Probability)
 w1 <- cleanDataC %>%
   group_by(Day, AnimalTag) %>%
   filter(Fluid == "Sucrose") %>% 
-  ggplot(aes(x = Day, y = ChoiceFrequency, color = AnimalTag)) +
+  ggplot(aes(x = Day, y = choiceFrequency, color = AnimalTag)) +
   geom_point(size = 5) +
   geom_line() +
   # scale_y_continuous(limits = c(0,1)) +
 facet_grid(VisitType ~ Probability)
 
 thingy <- s1+w1
-# thingy
+thingy
 # ggsave(here("Figures", "Chart.pdf"), width = 16, height = 32)
 ```
 
-###Part 0
+## Choice Ratios
 ```{r}
 cleanDataC %>% #Get visits per mouse per type,
-  group_by(Fluid, Probability, Day, VisitType, AnimalTag) %>%
-  summarize(PerMouse = sum(Choices)/sum(PFVisits),
-            Mice,
-            .groups = "drop") %>% 
-  group_by(Fluid, Probability, Day, AnimalTag) %>% 
-#   summarize(MouseTot = sum(PerMouse)) %>% 
-# filter(MouseTot <= 1)
-  group_by(Fluid, Probability, Day, VisitType) %>%
-  summarize(yVal = sum(PerMouse)/Mice) %>% 
+  group_by(Day, VisitType, Fluid, Probability) %>%
+  summarize(yVal = sum(choiceFrequency)/Mice) %>% 
   ggplot(aes(x = Day, y = yVal, group = VisitType, fill = VisitType) ) +
   geom_line(aes(group = VisitType), color = "grey") +
   geom_point(shape = 21, size = 2, color = "black") +
   scale_x_continuous(limits = c(0,25)) +
-  scale_y_continuous(limits = c(0,1)) +
+  scale_y_continuous(limits = c(0,.25)) +
   ylab("Percent of Visits") +
   scale_fill_manual(values = VisitTypeColors) +
   theme_minimal() +
   facet_grid(Probability ~ Fluid)
 ```
 
-###Part 0.1
+## Group Visit Type Bar Chart (Broken)
 ```{r}
 #| fig-width: 16
 #| fig-height: 12
 
 VTGroupBars <- cleanDataCSucrose %>% #Get visits per mouse per type
+  
+  
   group_by(Group, Day, VisitType) %>%
-  summarize(yVal = sum(VTPreference)/MiceGroup/2)
+  summarize(yVal = sum(VTPreference)/Mice)
 VTGroupBars <- unique(VTGroupBars) 
 VTGroupBars %>% 
   group_by(Group, Day, VisitType) %>%
   ggplot(aes(x = Day, y = yVal, fill = VisitType), group = Group) +
   geom_bar(position = "stack", stat="identity") +
   scale_x_continuous(limits = c(0,26)) +
-  scale_y_continuous(limits = c(0,1)) +
+  scale_y_continuous(limits = c(0,2)) +
   ylab("Percent of visits") +
   scale_fill_manual(values = VisitTypeColors) +
   facet_wrap(vars(Group), ncol = 4)
 ggsave(here("figures", "VTGroupBars.pdf"), width = 16, height = 12)
 ```
-###Part 1
+## Probability Ratio 
 ```{r}
 #|fig-width: 32
 #Part A and B
@@ -792,7 +764,7 @@ SucroseRiskRatio <- UniqueVisitsC %>%
   geom_line(aes(group = Group), color = "grey")+
   geom_vline(xintercept = c(6.5, 10.5, 14.5, 20.5), color = "gray", linetype = "dashed") +
   geom_point()+
-  ylab("Ratio of risky visits") +
+  ylab("Ratio of risky visits (Sucrose)") +
   xlab("Day") +
   scale_color_manual(values = GroupColorsPalette) +
   scale_y_continuous(limits = c(0,1)) +
@@ -810,7 +782,7 @@ WaterRiskRatio <- UniqueVisitsC %>%
   geom_line(aes(group = Group), color = "grey")+
   geom_point()+
     geom_vline(xintercept = c(6.5, 10.5, 14.5, 20.5), color = "gray", linetype = "dashed")+
-  ylab("Ratio of risky visits") +
+  ylab("Ratio of risky visits (Water)") +
   xlab("Day") +
   scale_color_manual(values = GroupColorsPalette) +
   scale_y_continuous(limits = c(0,1)) +
@@ -819,7 +791,7 @@ WaterRiskRatio <- UniqueVisitsC %>%
 RiskRatioGraphs <- SucroseRiskRatio + WaterRiskRatio
 RiskRatioGraphs
 ```
-###Part 2
+## Group Risk Choices
 ```{r}
 #Part A
 #Sucrose risky vs safe visits
@@ -847,7 +819,7 @@ UniqueVisitsC %>%
   scale_x_continuous(limits = c(1,25))
 ```
 
-###Part 3
+## Sucrose Visit Percent control/auto
 ```{r}
 #Part A
 UniqueVisitsC %>% 
@@ -869,13 +841,10 @@ ggplot(aes(x = ExperimentDay, y = Sucrose_Ratio, group = Group, fill = Group,  c
     ymin=Sucrose_Ratio-SRSE,
     ymax=Sucrose_Ratio+SRSE, color = Group),
     width=.3) +
+  ylab("Ratio of Sucrose Visits") +
+  xlab("Day") +
   scale_color_manual(values = GroupColorsPalette) +
   scale_y_continuous(limits = c(0,1))
-
-# #Part B
-# UniqueVisitsC %>%
-#   filter(Probability == "Risky") %>%
-#   summarize(SucroseWaterComp = sum(Fluid == "Sucrose")/sum(Fluid == "Water"))
 ```
 
 
@@ -971,12 +940,12 @@ iMSNPercent
 
 ```
 
-
+## Explorer Visits Normalized control/auto
 ```{r}
 cleanDataC %>% 
-  filter(VisitType == "Explorer", (Group == "control" || Group == "auto HET")) %>% 
+  filter(VisitType == "Explorer" & (Group == "control" | Group == "auto HET")) %>% 
     group_by(Probability, Fluid, Group, AnimalTag) %>%
-  summarize(yVal = sum(ChoiceFrequency/max(Day) * 100),
+  summarize(yVal = sum(choiceFrequency/max(Day) * 100),
             .groups = "keep") %>% 
   ggplot(aes(x = Group, y = yVal, group = Fluid, fill = Group, shape = Group)) +
   stat_summary(fun = "mean", geom = "bar") +
@@ -994,11 +963,12 @@ cleanDataC %>%
   facet_grid(Probability ~ Fluid)
 ggsave(here("figures", "VisitsPercentExplorer.pdf"))
 ```
+## Unwanted Visits Normalized control/auto
 ```{r}
 p1 <-cleanDataC %>% 
-  filter(VisitType == "Unwanted", (Group == "control" || Group == "auto HET")) %>% 
+  filter(VisitType == "Unwanted" & (Group == "control" | Group == "auto HET")) %>% 
   group_by(Probability, Fluid, Group, AnimalTag) %>%
-  summarize(yVal = sum(ChoiceFrequency/max(Day) * 100),
+  summarize(yVal = sum(choiceFrequency/max(Day) * 100),
             .groups = "keep") %>% 
   ggplot(aes(x = Group, y = yVal, group = Fluid, fill = Group, shape = Group)) +
   stat_summary(fun = "mean", geom = "bar") +
@@ -1022,12 +992,12 @@ p1
 
 
 
-
+## Non-explorer Visits Normalized control/auto
 ```{r}
 cleanDataC %>% 
-  filter((Group == "control" || Group == "auto HET") & VisitType != "Explorer") %>% 
+  filter((Group == "control" | Group == "auto HET") & VisitType != "Explorer") %>% 
     group_by(Fluid, Group, AnimalTag, Probability) %>%
-  summarize(yVal = sum(ChoiceFrequency)/max(Day) * 100,
+  summarize(yVal = sum(choiceFrequency)/max(Day) * 100,
             .groups = "keep") %>% 
   ggplot(aes(x = Group, y = yVal, group = Fluid, fill = Group, shape = Group)) +
   stat_summary(fun = "mean", geom = "bar") +
@@ -1047,29 +1017,34 @@ cleanDataC %>%
 ggsave(here("figures", "VisitsPercentProbability.pdf"))
   
 ```
-```{r}
 
-cleanDataC %>%
-  filter((Group == "control" || Group == "auto HET")) %>% 
-    group_by(Fluid, AnimalTag) %>% 
-  mutate(SucroseRatio = sum(Choices)/Visits, .groups = "drop") %>%
-  group_by(Probability, Fluid, VisitType, Group, AnimalTag) %>%
-  summarize(yVal = sum(ChoiceFrequency/max(Day) * 100),
-            .groups = "drop") %>% 
-  pivot_wider(names_from = Probability, values_from = yVal) %>%
-  arrange(AnimalTag)
-  write_csv(cleanDataC, here("data/export", "C34cleanData.csv"))
+## Learning Curve Graph (Unfinished)
+```{r}
+LearningCurveDS <- LearningCurveDS %>% 
+  group_by(Corner, AnimalTag, timeDifference) %>% 
+  mutate(Choices = n_distinct(Session, VisitID))
+
+LearningCurveDS %>%
+  group_by(Group, Corner, timeDifference, AnimalTag) %>%
+  filter(Group != "NA") %>% 
+  summarize(Choice = )
+  ggplot(aes(x = timeDifference, 
+        y = sum()/n_distinct(VisitID),
+        group = Group, fill = Group, color = Group)) +
+  xlab("Hours Since switch (Group Sort)") +
+  ylab("Percent of Risky Visits (Corner Sort)") +
+    labs(caption = "Corners 2 and 4 are water, 1 & 3 are sucrose") +
+  scale_y_continuous(limits = c(0,1)) +
+  geom_point() +
+  geom_line() +
+  facet_grid(Corner ~ Group)
 ```
 
-
 ```{r}
-# UniqueVisitsC %>%
-#   group_by(Group, Fluid, Corner, Session) %>%
-#   filter(ExperimentDay == max(ExperimentDay)) %>%
-#   ggplot(aes(x = ExperimentDay, y = , group = Group, fill = Group,  color = Group)) +
-#   geom_point() +
-#   geom_line() +
-#   facet_grid(Corner ~ Fluid)
+LearningCurveDS %>%
+  group_by(Group, Corner, timeDifference, AnimalTag) %>%
+  filter(Group != "NA") %>% 
+  summarize(x = timeDifference, 
+        y = sum(Probability == "Risky")/(n_distinct(VisitID)))
 ```
-
 
