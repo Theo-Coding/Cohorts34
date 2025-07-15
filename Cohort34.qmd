@@ -234,18 +234,55 @@ learningCurveDS <- learningCurveDS%>%
 ```
 
 ```{r}
-      learningCurveDS %>% 
+    FluidVisitsS <- learningCurveDS %>% 
   group_by(diffTime, Group) %>% 
-      summarize(totalVisits = n_distinct(VisitID),
-                Group, Corner, VisitID) %>% 
-        group_by(diffTime, Group, Corner) %>% 
-        summarize(visits = n_distinct(VisitID)/totalVisits) %>% 
+      summarize(totalVisits = n_distinct(VisitID, AnimalTag),
+                Group, Probability, VisitID, AnimalTag, Session) %>% 
+        group_by(diffTime, Group, Probability) %>% 
+    filter(Probability == "Risky") %>% 
+        summarize(visits = n_distinct(VisitID, AnimalTag)/totalVisits,
+                  n_distinct(VisitID, AnimalTag),
+                  totalVisits, Session) %>% 
   ggplot(aes(x = diffTime, y = visits, group = Group, fill = Group, color = Group)) +
   scale_y_continuous(limits = c(0,1)) +
   geom_point() +
-  facet_wrap(vars(Corner))
+  ylab(label = "Probability Ratio") +
+  xlab(label = "Hours Since Fluid Switch (Risky)") +
+  facet_wrap(vars(Session))
+
+    FluidVisitsW <- learningCurveDS %>% 
+  group_by(diffTime, Group) %>% 
+      summarize(totalVisits = n_distinct(VisitID, AnimalTag),
+                Group, Probability, VisitID, AnimalTag, Session) %>% 
+        group_by(diffTime, Group, Probability) %>% 
+        filter(Probability == "Safe") %>% 
+        summarize(visits = n_distinct(VisitID, AnimalTag)/totalVisits,
+                  n_distinct(VisitID, AnimalTag),
+                  totalVisits, Session) %>% 
+  ggplot(aes(x = diffTime, y = visits, group = Group, fill = Group, color = Group)) +
+  scale_y_continuous(limits = c(0,1)) +
+  geom_point() +
+  ylab(label = "Probability Ratio") +
+  xlab(label = "Hours Since Fluid Switch (Water)") +
+  facet_wrap(vars(Session))
   
+    
+  FluidVisitsS + FluidVisitsW
 ```
+
+```{r}
+      learningCurveDS %>% 
+  group_by(diffTime, Group) %>% 
+  # filter(Cage != 2) %>% 
+      summarize(totalVisits = n_distinct(VisitID, AnimalTag),
+                Group, Corner, VisitID, AnimalTag) %>% 
+        group_by(diffTime, Group, Corner) %>% 
+        summarize(cornerRatio = n_distinct(VisitID, AnimalTag)/totalVisits,
+                  n_distinct(VisitID, AnimalTag),
+                  totalVisits) %>% 
+  unique()
+```
+
 
 ##  Adding to clean sets
 ```{r}
