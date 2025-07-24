@@ -234,12 +234,13 @@ learningCurveDS <- learningCurveDS%>%
       floor(as.numeric(difftime(Start, afterSwap, units = "hours"))),
       floor(as.numeric(difftime(Start, beforeSwap, units = "hours")))))
 ```
-
+##Learning Curve Graphs
 ```{r}
 #| fig-width: 16
 #| fig-height: 16
 
     FluidVisitsS <- learningCurveDS %>% 
+
   filter(swapNumber != 0 & swapNumber != 17 & Fluid == "Sucrose") %>% 
   group_by(swapNumber, diffTime) %>% 
       mutate(totalVisits = n_distinct(VisitID)) %>% 
@@ -257,29 +258,131 @@ ggsave(here("figures", "LearningCurve.pdf"))
 ```
 
 ```{r}
-visits_data <- learningCurveDS %>% 
-  filter(swapNumber != 0 & swapNumber != 17 & Fluid == "Sucrose") %>% 
+sucrose_data <- learningCurveDS %>% 
+        filter(abs(diffTime) <= 24) %>%
+  filter(!swapNumber %in% c(0, 15, 16, 17) & Fluid == "Sucrose") %>% 
   group_by(swapNumber, diffTime) %>% 
   summarise(
     totalVisits = n_distinct(VisitID),
     riskyVisits = n_distinct(VisitID[Probability == "Risky"]),
     visits = riskyVisits / totalVisits,
-    .groups = "drop"
+    .groups = "keep"
   ) %>%
+  group_by(diffTime) %>% 
+  summarize(meanVisits = mean(visits),
+            n = n(),
+            standardDeviation = sd(visits),
+            SEM = standardDeviation/sqrt(n)) 
   # Only complete combinations where we know the swapNumber and diffTime exist in original data
-  complete(nesting(swapNumber, diffTime), fill = list(visits = NA)) %>%
-  filter(!is.na(visits))  # Remove the NA rows that complete() might have added
+  # complete(nesting(swapNumber, diffTime), fill = list(visits = NA)) %>%
+  # filter(!is.na(visits))  # Remove the NA rows that complete() might have added
 
-learningCurveGraph <- visits_data %>%
-  ggplot(aes(x = diffTime, y = visits)) +
+sucroseLearning <- sucrose_data %>%
+  ggplot(aes(x = diffTime, y = meanVisits)) +
+    geom_errorbar(aes(ymin = meanVisits-SEM,
+                    ymax = meanVisits+SEM)) +
   geom_line(linewidth = .5) +
   geom_point(shape = 21, color = "black", fill = "yellow") +
   ylab(label = "Ratio of Risky to Total Visits (Sucrose Only)") +
   xlab(label = "Hours Since Fluid Switch") +
-  scale_y_continuous(limits = c(0,1)) +
-  facet_wrap(vars(swapNumber))
-learningCurveGraph
-ggsave(here("figures", "learningCurveCompletedRisky.pdf"), width = 16, height = 16)
+  scale_y_continuous(limits = c(0,1))
+
+sucrose_data_end <- learningCurveDS %>% 
+          filter(abs(diffTime) <= 24) %>%
+  filter((swapNumber == 15 | swapNumber == 16 ) & Fluid == "Sucrose") %>% 
+  group_by(swapNumber, diffTime) %>% 
+  summarise(
+    totalVisits = n_distinct(VisitID),
+    riskyVisits = n_distinct(VisitID[Probability == "Risky"]),
+    visits = riskyVisits / totalVisits,
+    .groups = "keep"
+  ) %>%
+  group_by(diffTime) %>% 
+  summarize(meanVisits = mean(visits),
+            n = n(),
+            standardDeviation = sd(visits),
+            SEM = standardDeviation/sqrt(n),
+            visits,
+            swapNumber) #%>%
+  # Only complete combinations where we know the swapNumber and diffTime exist in original data
+  # complete(nesting(diffTime), fill = list(visits = NA)) %>%
+  # filter(!is.na(visits))  # Remove the NA rows that complete() might have added
+
+sucroseLearningEnd <- sucrose_data_end %>%
+  ggplot(aes(x = diffTime, y = meanVisits)) +
+    geom_errorbar(aes(ymin = meanVisits-SEM,
+                    ymax = meanVisits+SEM)) +
+  geom_line(linewidth = .5) +
+  geom_point(shape = 21, color = "black", fill = "yellow") +
+  ylab(label = "Ratio of Risky to Total Visits (Sucrose After Probability Change)") +
+  xlab(label = "Hours Since Fluid Switch") +
+  scale_y_continuous(limits = c(0,1))
+  # facet_wrap(vars(swapNumber))
+
+
+
+water_data <- learningCurveDS %>% 
+        filter(abs(diffTime) <= 24) %>%
+  filter(!swapNumber %in% c(0, 15, 16, 17) & Fluid == "Water") %>% 
+  group_by(swapNumber, diffTime) %>% 
+  summarise(
+    totalVisits = n_distinct(VisitID),
+    riskyVisits = n_distinct(VisitID[Probability == "Risky"]),
+    visits = riskyVisits / totalVisits,
+    .groups = "keep"
+  ) %>%
+  group_by(diffTime) %>% 
+  summarize(meanVisits = mean(visits),
+            n = n(),
+            standardDeviation = sd(visits),
+            SEM = standardDeviation/sqrt(n)) 
+  # Only complete combinations where we know the swapNumber and diffTime exist in original data
+  # complete(nesting(swapNumber, diffTime), fill = list(visits = NA)) %>%
+  # filter(!is.na(visits))  # Remove the NA rows that complete() might have added
+
+waterLearning <- water_data %>%
+  ggplot(aes(x = diffTime, y = meanVisits)) +
+    geom_errorbar(aes(ymin = meanVisits-SEM,
+                    ymax = meanVisits+SEM)) +
+  geom_line(linewidth = .5) +
+  geom_point(shape = 21, color = "black", fill = "yellow") +
+  ylab(label = "Ratio of Risky to Total Visits (Water Only)") +
+  xlab(label = "Hours Since Fluid Switch") +
+  scale_y_continuous(limits = c(0,1))
+
+water_data_end <- learningCurveDS %>% 
+          filter(abs(diffTime) <= 24) %>%
+  filter((swapNumber == 15 | swapNumber == 16 ) & Fluid == "Water") %>% 
+  group_by(swapNumber, diffTime) %>% 
+  summarise(
+    totalVisits = n_distinct(VisitID),
+    riskyVisits = n_distinct(VisitID[Probability == "Risky"]),
+    visits = riskyVisits / totalVisits,
+    .groups = "keep"
+  ) %>%
+  group_by(diffTime) %>% 
+  summarize(meanVisits = mean(visits),
+            n = n(),
+            standardDeviation = sd(visits),
+            SEM = standardDeviation/sqrt(n),
+            visits,
+            swapNumber) #%>%
+  # Only complete combinations where we know the swapNumber and diffTime exist in original data
+  # complete(nesting(diffTime), fill = list(visits = NA)) %>%
+  # filter(!is.na(visits))  # Remove the NA rows that complete() might have added
+
+waterLearningEnd <- water_data_end %>%
+  ggplot(aes(x = diffTime, y = meanVisits)) +
+    geom_errorbar(aes(ymin = meanVisits-SEM,
+                    ymax = meanVisits+SEM)) +
+  geom_line(linewidth = .5) +
+  geom_point(shape = 21, color = "black", fill = "yellow") +
+  ylab(label = "Ratio of Risky to Total Visits (Water After Probability Change)") +
+  xlab(label = "Hours Since Fluid Switch") +
+  scale_y_continuous(limits = c(0,1))
+  # facet_wrap(vars(swapNumber))
+sucroseLearning + sucroseLearningEnd + waterLearning + waterLearningEnd
+ggsave(here("figures", "learningCurveNew.pdf"), width = 16, height = 16)
 ```
 
 
