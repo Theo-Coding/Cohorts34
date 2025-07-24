@@ -101,6 +101,9 @@ for(x in 2:length(experimentsC)){ #Iterate through all experiments, grab their n
   visitsC <- visitsC %>% 
     relocate(c("Animal", "Sex", "Group"), .after = AnimalTag) 
   #Adding all booleanreporters, which allows us to determine the type of each visit (Rewarded, Unrewarded, Unwanted, Explorer)
+```  
+
+```{r}
   visitsC <- left_join(visitsC, booleanReportersC, by=c("Session", "VisitID")) %>% 
     mutate(
          Fluid = if_else(Corner %in% c(2,4), "Water", "Sucrose"), #Adds fluid
@@ -122,6 +125,10 @@ for(x in 2:length(experimentsC)){ #Iterate through all experiments, grab their n
            (Session == 11) ~ "Risky",
            (Session == 12) ~ "Safe",
            (Session == 13) ~ "Risky",
+          (Session == 14) ~ "Safe",
+           (Session == 15) ~ "Risky",
+           (Session == 16) ~ "Safe",
+           (Session == 17) ~ "Risky",
            .default = "Error"
                    ),
          case_when( #Mouse visited 3 or 4
@@ -141,6 +148,10 @@ for(x in 2:length(experimentsC)){ #Iterate through all experiments, grab their n
            (Session == 11) ~ "Safe",
            (Session == 12) ~ "Risky",
            (Session == 13) ~ "Safe",
+           (Session == 14) ~ "Risky",
+           (Session == 15) ~ "Safe",
+           (Session == 16) ~ "Risky",
+           (Session == 17) ~ "Safe",
             .default = "Error"
                   )
               ),
@@ -168,13 +179,18 @@ UniqueVisitsC <- visitsC %>%
     mutate(beforeSwap = max(Start),
            afterSwap = min(Start),
            sessionMinDay = min(CohortDay),
-           sessionMaxDay = max(CohortDay))
+           sessionMaxDay = max(CohortDay),
+           switchType = case_when(Start-afterSwap <= as.difftime(1, units = "days") ~ "afterswap",
+                                  beforeSwap-Start <= as.difftime(1, units = "days") ~ "beforeswap"), #Making the 24 hours before a swap
+          swapNumber = case_when(switchType == "beforeswap" ~ Session,
+                                 switchType == "afterswap" ~ Session-1)
+           )
 
 
 #Copying all of the visits to UniqueVisitsC, this will make every visit only 1 row in the data, 
 #as opposed to after nosepokes is added, where each visit is split into its nose pokes as well
 
-visitsC <- left_join(visitsC, nosepokesC, by=c("Session","VisitID"))
+visitsC <- left_join(visitsC, nosepokesC, by=c("Session","VisitID", "Start"))
 
  
 #Cleaning out NA with default values
@@ -191,10 +207,6 @@ is.na(visitsC$LED1State) <- 0
 is.na(visitsC$LED2State) <- 0
 is.na(visitsC$LED3State) <- 0
 
-```
-
-##  Creating a cleaned data table
-```{r}
 cleanDataC <- UniqueVisitsC %>% 
   group_by(AnimalTag, CohortDay, VisitType, Probability, Fluid, Sex, Group) %>% 
   filter(VisitType != "Error!" & Group != "NA") %>% 
@@ -211,64 +223,83 @@ cleanDataC <- UniqueVisitsC %>%
 cleanDataCSucrose <- cleanDataC %>%
   filter(Fluid == "Sucrose")
 
-learningCurveDS <- UniqueVisitsC %>%
-  filter((Start-afterSwap <= as.difftime(1, units = "days") | 
-          beforeSwap-Start <= as.difftime(1, units = "days")) & 
-          VisitType != "Error!")
-          # !(CohortDay == 1 & Session == 1)) &
-learningCurveDS %>% 
-  group_by(Session)
-```
 
-```{r}
+learningCurveDS <- UniqueVisitsC %>%
+  filter((afterSwap-Start <= as.difftime(1, units = "days") | 
+          Start-beforeSwap <= as.difftime(1, units = "days")) & 
+          VisitType != "Error!")
+
 learningCurveDS <- learningCurveDS%>% 
   mutate(diffTime = if_else(CohortDay-sessionMinDay <= 1,
-      floor(as.numeric(difftime(afterSwap, Start, units = "hours"))),
-      floor(as.numeric(difftime(beforeSwap, Start, units = "hours")))))
-      
-      learningCurveDS %>% 
-        group_by(diffTime, AnimalTag, Corner) %>% 
-        summarize(licks = n_distinct(VisitID)) %>% 
-          gt()
-
+      floor(as.numeric(difftime(Start, afterSwap, units = "hours"))),
+      floor(as.numeric(difftime(Start, beforeSwap, units = "hours")))))
 ```
 
 ```{r}
-    FluidVisitsS <- learningCurveDS %>% 
-  group_by(diffTime, Group) %>% 
-      summarize(totalVisits = n_distinct(VisitID, AnimalTag),
-                Group, Probability, VisitID, AnimalTag, Session) %>% 
-        group_by(diffTime, Group, Probability) %>% 
-    filter(Probability == "Risky") %>% 
-        summarize(visits = n_distinct(VisitID, AnimalTag)/totalVisits,
-                  n_distinct(VisitID, AnimalTag),
-                  totalVisits, Session) %>% 
-  ggplot(aes(x = diffTime, y = visits, group = Group, fill = Group, color = Group)) +
-  scale_y_continuous(limits = c(0,1)) +
-  geom_point() +
-  ylab(label = "Probability Ratio") +
-  xlab(label = "Hours Since Fluid Switch (Risky)") +
-  facet_wrap(vars(Session))
+#| fig-width: 16
+#| fig-height: 16
 
-    FluidVisitsW <- learningCurveDS %>% 
-  group_by(diffTime, Group) %>% 
-      summarize(totalVisits = n_distinct(VisitID, AnimalTag),
-                Group, Probability, VisitID, AnimalTag, Session) %>% 
-        group_by(diffTime, Group, Probability) %>% 
-        filter(Probability == "Safe") %>% 
-        summarize(visits = n_distinct(VisitID, AnimalTag)/totalVisits,
-                  n_distinct(VisitID, AnimalTag),
-                  totalVisits, Session) %>% 
-  ggplot(aes(x = diffTime, y = visits, group = Group, fill = Group, color = Group)) +
+    FluidVisitsS <- learningCurveDS %>% 
+  filter(swapNumber != 0 & swapNumber != 17 & Fluid == "Sucrose") %>% 
+  group_by(swapNumber, diffTime) %>% 
+      mutate(totalVisits = n_distinct(VisitID)) %>% 
+    filter(Probability == "Risky") %>% 
+        mutate(visits = n_distinct(VisitID)/(totalVisits)) %>%
+  ggplot(aes(x = diffTime, y = visits)) + #group = Group, fill = Group
+  geom_line(linewidth = .5) +
+  geom_point(shape = 21, color = "black") +
+  ylab(label = "Ratio of Risky to Total Visits (Sucrose Only)") +
+  xlab(label = "Hours Since Fluid Switch") +
   scale_y_continuous(limits = c(0,1)) +
-  geom_point() +
-  ylab(label = "Probability Ratio") +
-  xlab(label = "Hours Since Fluid Switch (Water)") +
-  facet_wrap(vars(Session))
-  
-    
-  FluidVisitsS + FluidVisitsW
+  facet_wrap(vars(swapNumber))
+    FluidVisitsS
+ggsave(here("figures", "LearningCurve.pdf"))
 ```
+
+```{r}
+visits_data <- learningCurveDS %>% 
+  filter(swapNumber != 0 & swapNumber != 17 & Fluid == "Sucrose") %>% 
+  group_by(swapNumber, diffTime) %>% 
+  summarise(
+    totalVisits = n_distinct(VisitID),
+    riskyVisits = n_distinct(VisitID[Probability == "Risky"]),
+    visits = riskyVisits / totalVisits,
+    .groups = "drop"
+  ) %>%
+  # Only complete combinations where we know the swapNumber and diffTime exist in original data
+  complete(nesting(swapNumber, diffTime), fill = list(visits = NA)) %>%
+  filter(!is.na(visits))  # Remove the NA rows that complete() might have added
+
+learningCurveGraph <- visits_data %>%
+  ggplot(aes(x = diffTime, y = visits)) +
+  geom_line(linewidth = .5) +
+  geom_point(shape = 21, color = "black", fill = "yellow") +
+  ylab(label = "Ratio of Risky to Total Visits (Sucrose Only)") +
+  xlab(label = "Hours Since Fluid Switch") +
+  scale_y_continuous(limits = c(0,1)) +
+  facet_wrap(vars(swapNumber))
+learningCurveGraph
+ggsave(here("figures", "learningCurveCompletedRisky.pdf"), width = 16, height = 16)
+```
+
+
+```{r}
+learningCurveDS %>% 
+  filter(swapNumber == 2) %>% 
+  group_by(swapNumber, diffTime) %>% 
+  mutate(totalVisits = n_distinct(VisitID)) %>% 
+    filter(Probability == "Risky") %>% 
+        summarize(visits = n_distinct(VisitID)/(totalVisits)) %>% 
+  gt()
+# check_data <- learningCurveDS %>% 
+#   filter(swapNumber != 0 & swapNumber != 17 & Fluid == "Sucrose") %>% 
+#   group_by(diffTime) %>% 
+#   mutate(totalVisits = n_distinct(VisitID, AnimalTag)) %>%
+#   count(diffTime, swapNumber, Probability, totalVisits) %>% 
+#   group_by(swapNumber, diffTime) %>% 
+# print(.)
+```
+
 
 ```{r}
       learningCurveDS %>% 
@@ -350,7 +381,7 @@ miceC %>%
   mutate(total = sum(Female, Male, na.rm = T)) %>% 
   gt(rowname_col = "Group") %>% 
   tab_header(title = "Mouse Count", 
-             subtitle = "Cohorts 3 & 4 and 1 week of 5") %>% 
+             subtitle = "Cohorts 3, 4 & 5") %>% 
   sub_missing() %>% 
   grand_summary_rows(columns = (Female:total),
                      fns = list(
