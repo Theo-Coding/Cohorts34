@@ -276,8 +276,8 @@ sucrose_data <- learningCurveDS %>%
 
 sucroseLearning <- sucrose_data %>%
   ggplot(aes(x = diffTime, y = meanVisits, fill = Group)) +
-    geom_errorbar(aes(ymin = meanVisits-SEM,
-                    ymax = meanVisits+SEM)) +
+    # geom_errorbar(aes(ymin = meanVisits-SEM,
+    #                 ymax = meanVisits+SEM)) +
   geom_line(linewidth = .5) +
   geom_point(shape = 21,  size = 2, color = "black") +
   ylab(label = "Ratio of Risky to Total Visits") +
@@ -303,8 +303,8 @@ sucrose_data_end <- learningCurveDS %>%
             swapNumber) #%>%
 sucroseLearningEnd <- sucrose_data_end %>%
   ggplot(aes(x = diffTime, y = meanVisits,  fill = Group)) +
-    geom_errorbar(aes(ymin = meanVisits-SEM,
-                    ymax = meanVisits+SEM)) +
+    # geom_errorbar(aes(ymin = meanVisits-SEM,
+    #                 ymax = meanVisits+SEM)) +
   geom_line(linewidth = .5) +
   geom_point(shape = 21, size = 2, color = "black") +
   ylab(label = "Ratio of Risky to Total Visits") +
@@ -331,8 +331,8 @@ water_data <- learningCurveDS %>%
 
 waterLearning <- water_data %>%
   ggplot(aes(x = diffTime, y = meanVisits,  fill = Group)) +
-    geom_errorbar(aes(ymin = meanVisits-SEM,
-                    ymax = meanVisits+SEM)) +
+    # geom_errorbar(aes(ymin = meanVisits-SEM,
+    #                 ymax = meanVisits+SEM)) +
   geom_line(linewidth = .5) +
   geom_point(shape = 21, size = 2, color = "black") +
   ylab(label = "Ratio of Risky to Total Visits") +
@@ -358,8 +358,8 @@ water_data_end <- learningCurveDS %>%
             swapNumber)
 waterLearningEnd <- water_data_end %>%
   ggplot(aes(x = diffTime, y = meanVisits, fill = Group)) +
-    geom_errorbar(aes(ymin = meanVisits-SEM,
-                    ymax = meanVisits+SEM)) +
+    # geom_errorbar(aes(ymin = meanVisits-SEM,
+    #                 ymax = meanVisits+SEM)) +
   geom_line(linewidth = .5) +
   geom_point(shape = 21, size = 2, color = "black",) +
   ylab(label = "Ratio of Risky to Total Visits") +
@@ -367,7 +367,7 @@ waterLearningEnd <- water_data_end %>%
   scale_y_continuous(limits = c(0,1))
 
 sucroseLearning + sucroseLearningEnd + waterLearning + waterLearningEnd
-ggsave(here("figures", "learningCurveNotControlErrorBar.pdf"), width = 16, height = 16)
+ggsave(here("figures", "learningCurveNotControlNoErrorBar.pdf"), width = 16, height = 16)
 ```
 
 
